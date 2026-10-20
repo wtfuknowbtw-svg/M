@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="a little world made just for you — a private romantic corner of the internet." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Open Graph (pretty link preview on Instagram DMs) -->
+  <meta property="og:title" content="a little world made just for you ♡" />
+  <meta property="og:description" content="i made you a tiny little escape." />
+  <meta property="og:type" content="website" />
+
+  <title>a little world made just for you ♡</title>
+
+  <!-- Favicon (inline SVG heart) -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♡</text></svg>" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css?v=7" />
+</head>
+
+<body>
+
+  <!-- ─────────────────────────────────────────
+       GLOBAL AMBIENT LAYERS (always visible)
+  ───────────────────────────────────────── -->
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Ambient colour orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- Back Navigation -->
+  <button class="back-btn hidden" id="back-btn" aria-label="Back to home">
+    ← back
+  </button>
+
+  <!-- Music Toggle (shown only if musicPath is set in config.js) -->
+  <button class="music-btn hidden" id="music-btn" aria-label="Play music" title="Toggle music">
+    ♪
+  </button>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 1 — CINEMATIC INTRO (Moonlit Garden)
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-intro" aria-label="Welcome">
+
+    <!-- Moon decoration -->
+    <div class="intro-moon" aria-hidden="true"></div>
+
+    <!-- Lily decoration at bottom -->
+    <div class="intro-lilies" aria-hidden="true">
+      <svg class="intro-lily-svg" viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 88 Q29 72 30 55" fill="none" stroke="#7a9970" stroke-width="2" stroke-linecap="round" />
+        <ellipse cx="24" cy="74" rx="7" ry="3" transform="rotate(-25 24 74)" fill="#7a9970" opacity="0.7" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(0 30 42)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(60 30 42)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(120 30 42)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(180 30 42)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(240 30 42)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="28" rx="5" ry="14" transform="rotate(300 30 42)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <circle cx="30" cy="42" r="4.5" fill="#e8dcc0" />
+        <circle cx="28" cy="37" r="1" fill="#c4956a" opacity="0.6" />
+        <circle cx="32" cy="37" r="1" fill="#c4956a" opacity="0.6" />
+        <circle cx="30" cy="35" r="1" fill="#c4956a" opacity="0.6" />
+      </svg>
+      <svg class="intro-lily-svg" viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 88 Q28 70 30 52" fill="none" stroke="#7a9970" stroke-width="2.2" stroke-linecap="round" />
+        <ellipse cx="36" cy="70" rx="7" ry="3" transform="rotate(20 36 70)" fill="#8aaa7a" opacity="0.7" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(0 30 40)" fill="#f2f1f8" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(60 30 40)" fill="#edecf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(120 30 40)" fill="#f2f1f8" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(180 30 40)" fill="#edecf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(240 30 40)" fill="#f2f1f8" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="24" rx="5.5" ry="16" transform="rotate(300 30 40)" fill="#edecf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <circle cx="30" cy="40" r="5" fill="#e8dcc0" />
+        <circle cx="27" cy="35" r="1.2" fill="#c4956a" opacity="0.6" />
+        <circle cx="33" cy="35" r="1.2" fill="#c4956a" opacity="0.6" />
+        <circle cx="30" cy="33" r="1.2" fill="#c4956a" opacity="0.6" />
+      </svg>
+      <svg class="intro-lily-svg" viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 88 Q31 74 30 58" fill="none" stroke="#7a9970" stroke-width="2" stroke-linecap="round" />
+        <ellipse cx="24" cy="76" rx="6" ry="3" transform="rotate(-20 24 76)" fill="#7a9970" opacity="0.6" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(0 30 43)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(60 30 43)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(120 30 43)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(180 30 43)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(240 30 43)" fill="#f0eff5" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <ellipse cx="30" cy="30" rx="5" ry="13" transform="rotate(300 30 43)" fill="#eeedf4" stroke="#e4e0ee"
+          stroke-width="0.3" />
+        <circle cx="30" cy="43" r="4" fill="#e8dcc0" />
+        <circle cx="28" cy="39" r="1" fill="#c4956a" opacity="0.5" />
+        <circle cx="32" cy="39" r="1" fill="#c4956a" opacity="0.5" />
+      </svg>
+    </div>
+
+    <span class="intro-glow-heart intro-line" aria-hidden="true">♡</span>
+
+    <h1 class="intro-title intro-line serif">
+      hey, maithili
+    </h1>
+
+    <p class="intro-sub intro-line">
+      yrr aaj mala mahit hota khup bor honar ahe tula study kraycha hota ani maza pn study almost zala ahe, so just
+      thought ki tula khi tr suprise deu
+    </p>
+
+    <p class="intro-sub intro-line" style="margin-top:0;">
+      i know tu ata thakli asel, study krun so ye ek choti si chij mere taraf se, jst enjoy
+    </p>
+
+    <div class="intro-btn-wrap intro-line">
+      <button class="btn btn-primary" id="intro-enter-btn" onclick="App.goTo('hub', false)">
+        come on in ♡
+      </button>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 2 — HUB / HOME
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-hub" aria-label="Your little world">
+    <div class="hub-header">
+      <h1>hi, pretty girl, maithili ♡</h1>
+      <p>i jst made some little things for u hoep u like it🙃<br>jst explore kr</p>
+    </div>
+
+    <nav class="destination-grid" id="dest-grid" aria-label="Destinations">
+      <!-- Built by JS from config.js destinations -->
+    </nav>
+  </section>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 3 — LOVE LETTER
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-letter" aria-label="A letter for you">
+    <div class="letter-wrap">
+      <div class="letter-paper" role="document" aria-label="Love letter">
+        <!-- Wax seal -->
+        <div class="letter-seal" aria-hidden="true">♡</div>
+
+        <!-- Tiny decorative lily -->
+        <div class="letter-lily-corner" aria-hidden="true">
+          <svg viewBox="0 0 40 50" class="letter-lily-svg" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 48 Q19 36 20 26" fill="none" stroke="#8da882" stroke-width="1.5" stroke-linecap="round" />
+            <ellipse cx="16" cy="40" rx="4" ry="1.5" transform="rotate(-20 16 40)" fill="#8da882" opacity="0.6" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(0 20 22)" fill="#ffffff" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(60 20 22)" fill="#f6f4fa" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(120 20 22)" fill="#ffffff" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(180 20 22)" fill="#f6f4fa" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(240 20 22)" fill="#ffffff" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <ellipse cx="20" cy="14" rx="3" ry="9" transform="rotate(300 20 22)" fill="#f6f4fa" stroke="#d5d0e2"
+              stroke-width="0.3" />
+            <circle cx="20" cy="22" r="2.5" fill="#e6dbbe" />
+            <circle cx="19" cy="20" r="0.6" fill="#ba9068" opacity="0.6" />
+            <circle cx="21" cy="20" r="0.6" fill="#ba9068" opacity="0.6" />
+          </svg>
+        </div>
+
+        <!-- Letter text (populated by JS) -->
+        <div class="letter-content" id="letter-content" aria-live="polite"></div>
+
+        <!-- Navigation -->
+        <div class="letter-footer">
+          <span class="letter-progress" id="letter-progress" aria-live="polite">1 / 1</span>
+          <div class="letter-nav">
+            <button class="letter-btn" id="letter-prev" aria-label="Previous page" disabled>← back</button>
+            <button class="letter-btn letter-btn-next" id="letter-next" aria-label="Next page">next →</button>
+            <button class="letter-btn letter-btn-next" id="letter-done" aria-label="Done reading"
+              style="display:none;">maithili, its done bro ♡</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="letter-glow" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 4 — LILY GARDEN
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-garden" aria-label="things i like bout you,">
+    <div class="garden-header">
+      <h2>things i like bout you🤧, btw sagle ch krto pn sagle nhi lihu shakat abhi utna time nhihe yrr😭</h2>
+      <p>jst tap lily ♡</p>
+    </div>
+
+    <div class="flower-grid" id="flower-grid" aria-label="Lily garden — click each lily">
+      <!-- Built by JS -->
+    </div>
+  </section>
+
+  <!-- Flower popup (portal, outside grid) -->
+  <div class="flower-popup" id="flower-popup" role="dialog" aria-modal="true" aria-label="Compliment">
+    <div class="flower-popup-overlay" id="flower-popup-overlay"></div>
+    <div class="flower-popup-card">
+      <span class="flower-popup-icon" id="flower-popup-icon" aria-hidden="true">🤓</span>
+      <p class="flower-popup-text" id="flower-popup-text"></p>
+      <button class="flower-popup-close" id="flower-popup-close">close ♡</button>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 5 — MEMORY LANE
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-memory" aria-label="Our little memory lane">
+    <div class="memory-header">
+      <h2>our little memory lane</h2>
+      <p>scroll through — these are yours to keep ♡</p>
+    </div>
+
+    <div class="memory-scroll" id="memory-scroll" role="list" aria-label="Memory polaroids">
+      <!-- Built by JS -->
+    </div>
+
+    <p class="ta-center mt-sm"
+      style="font-size:0.78rem;color:rgba(255,253,248,0.25);font-style:italic;max-width:340px;">
+      photos can be added by updating config.js — no real memories have been invented here.
+    </p>
+  </section>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 6 — MINI GAME
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-game" aria-label="Catch the Kitty's Kisses">
+    <div class="game-header">
+      <h2>catch those love hearts😚</h2>
+      <p>tap the falling hearts before they escape!! catch 10 heats to win ♡</p>
+    </div>
+
+    <div class="game-stats">
+      <div class="game-stat">
+        <div class="game-stat-val" id="game-score">0</div>
+        <div class="game-stat-label">hearts</div>
+      </div>
+      <div class="game-stat">
+        <div class="game-stat-val" id="game-lives">❤️❤️❤️</div>
+        <div class="game-stat-label">lives</div>
+      </div>
+    </div>
+
+    <canvas id="game-canvas" aria-label="Catch the Kitty's Kisses — tap or click hearts to catch them"></canvas>
+
+    <p class="game-hint">tap or click the falling hearts to catch them · don't let them fall! ♡</p>
+  </section>
+
+  <!-- Game overlays -->
+  <div class="game-overlay" id="game-start-overlay" role="dialog" aria-modal="true" aria-label="Start game">
+    <div class="game-overlay-bg"></div>
+    <div class="game-overlay-card">
+      <span class="game-overlay-icon">🐈</span>
+      <div class="game-overlay-title">Catch the Kitty's hearts</div>
+      <p class="game-overlay-text">
+        the kitties are sending you hearts!<br>
+        tap the hearts to catch them.<br>
+        catch 10 kisses to win, maithili!
+      </p>
+      <div class="game-overlay-btns">
+        <button class="btn btn-gold" id="game-start-btn">lets go ♡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Win overlay -->
+  <div class="game-overlay" id="game-win-overlay" role="dialog" aria-modal="true" aria-label="You won!">
+    <div class="game-overlay-bg"></div>
+    <div class="game-overlay-card game-win-card">
+      <img src="kitty-kiss.gif" alt="Kissing cats" class="game-win-gif" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="game-win-gif-fallback" style="display:none;">�😚</div>
+      <div class="game-overlay-title">AYYYYY YOU DID IT 😭❤️</div>
+      <p class="game-overlay-text">
+        your reward: one cat kiss and 😚😚
+      </p>
+      <div class="game-overlay-btns">
+        <button class="btn btn-gold" id="game-collect-btn">collect your hearts 💗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lose overlay -->
+  <div class="game-overlay" id="game-lose-overlay" role="dialog" aria-modal="true" aria-label="Game over">
+    <div class="game-overlay-bg"></div>
+    <div class="game-overlay-card">
+      <span class="game-overlay-icon">😿</span>
+      <div class="game-overlay-title">MAITHILIIII � the kitties were counting on you, btw puppies dont ha😭</div>
+      <p class="game-overlay-text">
+        it's okay chal koi na, ab sirf muzhe har roj bina puche voice notes send krti ja😏 aur yrr (vo ILU bhi bol skti he😭🙏)
+      </p>
+      <div class="game-overlay-btns">
+        <button class="btn btn-gold" id="game-retry-btn">one more try? 🐈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 7 — FINAL SURPRISE
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-surprise" aria-label="One last surprise">
+
+    <div class="surprise-intro" id="surprise-intro">
+      <p class="surprise-intro-text">okay, one last thing</p>
+    </div>
+
+    <div class="surprise-body" id="surprise-body">
+      <!-- Paragraphs built by JS from CONFIG.finalMessage -->
+      <p class="surprise-para" id="sp-0"></p>
+      <p class="surprise-para" id="sp-1"></p>
+      <p class="surprise-para" id="sp-2"></p>
+      <p class="surprise-para" id="sp-3"></p>
+      <p class="surprise-para" id="sp-4"></p>
+      <p class="surprise-para" id="sp-5"></p>
+      <p class="surprise-para" id="sp-6"></p>
+      <p class="surprise-para special" id="sp-7"></p>
+
+      <span class="surprise-heart" aria-hidden="true">♡</span>
+
+      <!-- Sunflower + lilies scene — built by JS -->
+      <div class="sunflower-scene" id="sunflower-scene" aria-label="A sunflower among lilies">
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" id="surprise-hug-btn">one last hug? ♡</button>
+      </div>
+
+      <div class="mt-md">
+        <button class="btn btn-ghost" onclick="App.goTo('end')">aage dekhoge jii??</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hug animation overlay -->
+  <div class="hug-overlay" id="hug-overlay" role="dialog" aria-modal="true" aria-label="A big hug">
+    <div class="hug-bg"></div>
+    <div class="hug-content">
+      <span class="hug-emoji" aria-hidden="true">🫂</span>
+      <p class="hug-text">
+        ek chota sa hug like chota nhi bada wala<br>
+        very tightly no escape😏 ♡
+      </p>
+      <button class="btn btn-ghost hug-close" id="hug-close" style="margin-top:28px;">ok okyy ♡</button>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════
+       SCREEN 8 — GOODNIGHT / GOOD-LUCK ENDING
+  ══════════════════════════════════════════ -->
+  <section class="screen" id="screen-end" aria-label="Good luck ending">
+    <div class="moon-scene" aria-hidden="true">
+      <div class="moon"></div>
+    </div>
+
+    <div class="end-lines" id="end-lines" aria-live="polite">
+      <!-- Built by JS from CONFIG.endingLines -->
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;align-items:center;">
+      <button class="btn btn-primary" id="end-home-btn">chal changla vatala tr parat bg♡</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SCRIPTS (config first, then app)
+  ───────────────────────────────────────── -->
+  <script src="config.js?v=7"></script>
+  <script>
+    // Inject CONFIG data into static HTML elements before app boots
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate surprise paragraphs from config
+      CONFIG.finalMessage.forEach((text, i) => {
+        const el = document.getElementById('sp-' + i);
+        if (el) el.textContent = text;
+      });
+    });
+  </script>
+  <script src="app.js?v=7"></script>
+</body>
+
+</html>
