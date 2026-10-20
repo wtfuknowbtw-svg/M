@@ -14,6 +14,14 @@ const App = {
   audio: null,
   audioPlaying: false,
 
+  // ── Device capability flags ───────────────────────────
+  // Phones/touch devices get a cheaper ambient layer set: fewer stars,
+  // a slower particle canvas and no per-frame glow effects.
+  isMobile: typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 768px), (pointer: coarse)').matches,
+  reducedMotion: typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+
   // ── Initialise ────────────────────────────────────────
   init() {
     this.setupBackground();
@@ -82,13 +90,18 @@ const App = {
   // ══════════════════════════════════════════════════════
 
   setupBackground() {
+    // 70 twinkling stars x 3 screens = 210 perpetually animated nodes.
+    // On a phone 24 each still reads as a full sky for a quarter of the
+    // style/layout cost.
+    const STAR_COUNT = this.isMobile ? 24 : 70;
+
     ['screen-intro', 'screen-surprise', 'screen-end'].forEach(id => {
       const screen = document.getElementById(id);
       if (!screen) return;
       const sf = document.createElement('div');
       sf.className = 'star-field';
       sf.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 70; i++) {
+      for (let i = 0; i < STAR_COUNT; i++) {
         const star = document.createElement('div');
         star.className = 'star';
         const size = Math.random() * 2.5 + 0.5;
@@ -111,6 +124,13 @@ const App = {
   setupParticles() {
     const canvas = document.getElementById('particles-canvas');
     if (!canvas) return;
+
+    // Respect the OS "reduce motion" setting — no ambient animation at all.
+    if (this.reducedMotion) {
+      canvas.style.display = 'none';
+      return;
+    }
+
     const ctx = canvas.getContext('2d');
     let particles = [];
 
@@ -120,6 +140,12 @@ const App = {
     };
     resize();
     window.addEventListener('resize', resize, { passive: true });
+
+    // Pure decoration: on phones it runs at ~30fps with a smaller pool so
+    // a full-screen canvas never competes with the UI for the GPU.
+    const MAX_PARTICLES = this.isMobile ? 10 : 22;
+    const SPAWN_EVERY = this.isMobile ? 55 : 35;
+    const FRAME_MS = this.isMobile ? 1000 / 30 : 0;
 
     const SYMBOLS = ['\u2661', '\u22C6', '\u00B7', '\u263D', '\u00B7'];
     const createParticle = () => ({
@@ -135,10 +161,19 @@ const App = {
     });
 
     let frameCount = 0;
-    const tick = () => {
+    let lastFrame = 0;
+    const tick = (ts) => {
+      requestAnimationFrame(tick);
+
+      // never paint the ambient layer while the tab/app is in the background
+      if (document.hidden) return;
+      // frame cap (0 = every frame)
+      if (FRAME_MS && ts - lastFrame < FRAME_MS) return;
+      lastFrame = ts;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       frameCount++;
-      if (frameCount % 35 === 0 && particles.length < 22) {
+      if (frameCount % SPAWN_EVERY === 0 && particles.length < MAX_PARTICLES) {
         particles.push(createParticle());
       }
       particles = particles.filter(p => p.frameAge < p.maxLife);
@@ -155,9 +190,8 @@ const App = {
         ctx.fillText(p.symbol, p.x, p.y);
       });
       ctx.globalAlpha = 1;
-      requestAnimationFrame(tick);
     };
-    tick();
+    requestAnimationFrame(tick);
   },
 
   // ══════════════════════════════════════════════════════
@@ -477,6 +511,16 @@ const App = {
   //  SCREEN 6 — MINI GAME (Catch the Kitty's Kisses)
   // ══════════════════════════════════════════════════════
 
+  // The ~500 KB win GIF is fetched the first time you actually win,
+  // instead of on every page load.
+  loadWinGif() {
+    const gif = document.getElementById('game-win-gif') ||
+      document.querySelector('.game-win-gif');
+    if (gif && !gif.getAttribute('src') && gif.dataset.src) {
+      gif.setAttribute('src', gif.dataset.src);
+    }
+  },
+
   // Called once at app start — attaches button listeners
   setupGame() {
     const startBtn = document.getElementById('game-start-btn');
@@ -524,17 +568,25 @@ const App = {
     const loseOverlay = document.getElementById('game-lose-overlay');
 
     // ── Canvas sizing ──
+    // DPR is capped at 2 (a 3x iPhone would otherwise rasterise 9x the
+    // pixels), and the CSS size is cached so the loop never forces a
+    // synchronous layout with getBoundingClientRect() several times a frame.
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    let cssW = 0, cssH = 0;
     const setSize = () => {
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width) return;
-      canvas.width = Math.round(rect.width * window.devicePixelRatio);
-      canvas.height = Math.round(rect.height * window.devicePixelRatio);
-      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (!w || !h) return;
+      cssW = w;
+      cssH = h;
+      canvas.width = Math.round(w * DPR);
+      canvas.height = Math.round(h * DPR);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     };
     requestAnimationFrame(setSize);
 
-    const W = () => canvas.getBoundingClientRect().width;
-    const H = () => canvas.getBoundingClientRect().height;
+    const W = () => cssW;
+    const H = () => cssH;
 
     // ── State ──
     const state = {
@@ -646,32 +698,51 @@ const App = {
       }
     };
 
-    canvas.addEventListener('mousedown', e => onHit(e.clientX, e.clientY));
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      onHit(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
+    // Input, resize and visibility handlers are bound ONCE for the life of
+    // the app. initGame() runs on every visit to this screen, and binding
+    // here used to stack a fresh set each time — leaking a visibilitychange
+    // listener per visit and making every tap run N handlers.
+    this._onGameHit = onHit;
+    this._onGameResize = setSize;
+    if (!this._gameListenersBound) {
+      this._gameListenersBound = true;
 
-    // ── Visibility change (pause when tab hidden) ──
-    const onVisibilityChange = () => {
-      if (document.hidden && state.running) {
-        state.running = false;
-        cancelAnimationFrame(state.raf);
+      canvas.addEventListener('mousedown', e => {
+        if (this._onGameHit) this._onGameHit(e.clientX, e.clientY);
+      });
+      canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        if (this._onGameHit) this._onGameHit(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: false });
+
+      // keep the canvas correctly sized on rotate / URL-bar collapse
+      if (window.ResizeObserver) {
+        this._gameRO = new ResizeObserver(() => this._onGameResize && this._onGameResize());
+        this._gameRO.observe(canvas);
+      } else {
+        window.addEventListener('resize', () => this._onGameResize && this._onGameResize(), { passive: true });
       }
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
+
+      // ── Visibility change (pause every loop when tab hidden) ──
+      document.addEventListener('visibilitychange', () => {
+        const s = this.gameState;
+        if (document.hidden && s && s.running) {
+          s.running = false;
+          cancelAnimationFrame(s.raf);
+        }
+      });
+    }
 
     const winGame = () => {
       state.running = false;
       cancelAnimationFrame(state.raf);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      this.loadWinGif();
       if (winOverlay) winOverlay.classList.add('visible');
     };
 
     const loseGame = () => {
       state.running = false;
       cancelAnimationFrame(state.raf);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (loseOverlay) loseOverlay.classList.add('visible');
     };
 
@@ -707,14 +778,17 @@ const App = {
           return false;
         }
 
-        // Draw heart
+        // Draw heart — a per-glyph shadowBlur is one of the most expensive
+        // canvas ops on a phone GPU, so the glow is desktop-only.
         ctx.globalAlpha = 0.95;
         ctx.fillStyle = heart.color;
         ctx.font = heart.size + 'px serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.shadowColor = heart.color;
-        ctx.shadowBlur = 10;
+        if (!this.isMobile) {
+          ctx.shadowColor = heart.color;
+          ctx.shadowBlur = 10;
+        }
         ctx.fillText('♡', heart.x, heart.y);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;

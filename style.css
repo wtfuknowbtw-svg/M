@@ -3,8 +3,10 @@
    MOONLIT LILY GARDEN — DESIGN SYSTEM & STYLES
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+/* ── Google Fonts ──
+   NOTE: loaded via <link rel="preconnect"> + <link rel="stylesheet"> in
+   index.html — a CSS @import chains an extra render-blocking request,
+   which is felt first on mobile. */
 
 /* ── CSS Variables ── */
 :root {
@@ -85,6 +87,13 @@ body {
   pointer-events: none;
 }
 
+/* Only the visible screen is laid out & painted — the other seven screens
+   (SVG garden, polaroids, letter, canvas…) drop out of the render tree
+   entirely. Browsers without content-visibility keep the old behaviour. */
+.screen { content-visibility: hidden; }
+.screen.active,
+.screen.exiting { content-visibility: visible; }
+
 /* ══════════════════════════════════════════
    SHARED AMBIENT BACKGROUND
 ══════════════════════════════════════════ */
@@ -102,9 +111,11 @@ body {
 /* Film grain overlay */
 .grain {
   position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
+  /* was -50% / 200% — a 4x-viewport texture kept alive for a
+     0.028-opacity grain. 108% is plenty for the 3%-max shift. */
+  inset: -4%;
+  width: 108%;
+  height: 108%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   opacity: 0.028;
   animation: grain-shift 8s steps(10) infinite;
@@ -227,7 +238,7 @@ p  { font-size: clamp(0.9rem, 3.5vw, 1.05rem); color: rgba(255,253,248,0.75); }
   border-radius: 50px;
   cursor: pointer;
   backdrop-filter: blur(14px);
-  transition: all 0.25s var(--ease-spring);
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s var(--ease-spring);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -254,7 +265,7 @@ p  { font-size: clamp(0.9rem, 3.5vw, 1.05rem); color: rgba(255,253,248,0.75); }
   border-radius: 50%;
   cursor: pointer;
   backdrop-filter: blur(14px);
-  transition: all 0.25s var(--ease-spring);
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s var(--ease-spring);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1352,4 +1363,47 @@ p  { font-size: clamp(0.9rem, 3.5vw, 1.05rem); color: rgba(255,253,248,0.75); }
   .intro-title { font-size: clamp(1.7rem, 8vw, 2.6rem); }
   .dest-card { padding: 16px 18px; }
   .flower-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE / TOUCH PERFORMANCE
+   Phones have a fraction of a desktop's GPU budget, so everything that
+   repaints or re-blurs *every frame* is swapped for a cheap equivalent.
+   Nothing is removed from the design — it just stops fighting the GPU.
+══════════════════════════════════════════ */
+@media (max-width: 768px), (pointer: coarse) {
+
+  /* backdrop-filter re-blurs its backdrop every time the layer behind it
+     moves (grain, particle canvas, floating orbs) — this is the single
+     biggest source of sustained jank on a phone. */
+  .btn-ghost,
+  .back-btn,
+  .music-btn,
+  .dest-card,
+  #game-canvas,
+  .flower-popup-overlay,
+  .game-overlay-bg {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* keep the frosted look with plain translucency instead */
+  .btn-ghost { background: rgba(255, 255, 255, 0.1); }
+  .back-btn,
+  .music-btn { background: rgba(23, 36, 58, 0.92); }
+  .dest-card { background: rgba(23, 36, 58, 0.5); }
+  #game-canvas { background: rgba(23, 36, 58, 0.95); }
+  .flower-popup-overlay { background: rgba(23, 36, 58, 0.94); }
+  .game-overlay-bg { background: rgba(23, 36, 58, 0.96); }
+
+  /* a giant texture sliding around 10x per cycle, for grain */
+  .grain { animation: none; }
+
+  /* animating box-shadow / filter = full repaint of that element every
+     frame — keep the glow, drop the pulse */
+  .intro-moon,
+  .moon { animation: none; }
+  .intro-glow-heart { animation: heart-pulse 3s ease-in-out infinite; }
+
+  /* three 60px-blurred orbs = a lot of GPU memory on a phone */
+  .orb { filter: blur(26px); }
 }
